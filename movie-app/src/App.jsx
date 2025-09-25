@@ -1,8 +1,7 @@
-import React, { useEffect,useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Search from './components/search'
 import Spinner from './components/spinner';
 import MovieCard from './components/MovieCard';
-import { useDebounce } from "react-use";
 
 const API_BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -21,9 +20,15 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
-  // useDebounce(()=> {setDebouncedSearchTerm(searchTerm)},500,[searchTerm]); //debouncing use to minimize api calls when searching by waiting for user to stop typing for 500ms to send an api call.
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm); // Update debounced term after 500ms
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]); // This effect runs when searchTerm changes
 
   const fetchMovies = async (query = '') => {
     setIsLoading(true);
@@ -60,8 +65,8 @@ const App = () => {
   }
 
   useEffect(() => {
-    fetchMovies(searchTerm);
-  }, [searchTerm]); //empty dependency array to only run once the component loads
+    fetchMovies(debouncedSearchTerm);
+  }, [debouncedSearchTerm]); // Effect will run when debouncedSearchTerm changes
 //A side effect is any work that doesn't directly relate to rendering the UI
 
 //useEffect(() => { ... }, []); (Empty Array)
